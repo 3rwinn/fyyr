@@ -36,8 +36,6 @@ To start and run the local development server,
   Set up your postgres database by changing the url in config.py. 
   After that you can proceed with:
   ```
-  $ flask db init
-  $ flask db migrate
   $ flask db upgrade
   ```
 
