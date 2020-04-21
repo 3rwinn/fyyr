@@ -425,7 +425,7 @@ def create_artist_submission():
     # we do a condition on it to set the correct value for seeking_venue
     if(request.form['seeking_venue'] == 'True'):
       seeking_venue = True
-    elif(request.form['seeking_venue'] == 'False'):
+    else:
       seeking_venue = False
     
     seeking_description = request.form['seeking_description']

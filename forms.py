@@ -220,7 +220,20 @@ class ArtistForm(Form):
             ('Other', 'Other'),
         ]
     )
+    image_link = StringField(
+        'image_link', validators=[URL()]
+    )
     facebook_link = StringField(
         'facebook_link', validators=[URL()]
+    )
+    seeking_venue = SelectField(
+        'seeking_venue', validators=[DataRequired()],
+        choices=[
+            (True, 'Yes'),
+            (False, 'No')
+        ]
+    )
+    seeking_description = StringField(
+        'seeking_description'
     )
 
