@@ -34,7 +34,7 @@ class Show(db.Model):
 
   artist_id = db.Column(db.Integer, db.ForeignKey('artist.id'), primary_key=True)
   venue_id = db.Column(db.Integer, db.ForeignKey('venue.id'), primary_key=True)
-  start_time = db.Column(db.String())
+  start_time = db.Column(db.String(), primary_key=True)
   artist = db.relationship("Artist", back_populates="venues")
   venue = db.relationship("Venue", back_populates="artist")
 
@@ -137,47 +137,56 @@ def search_venues():
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
   # shows the venue page with the given venue_id
-  venue = Venue.query.get(venue_id)
-  shows = Show.query.filter_by(venue_id=venue.id).join(Artist).all()
+  error = False
+  try:
+    venue = Venue.query.get(venue_id)
+    shows = Show.query.filter_by(venue_id=venue.id).join(Artist).all()
 
-  data = {
-    "id": venue.id,
-    "name": venue.name,
-    "address": venue.address,
-    "city": venue.city,
-    "genres": venue.genres,
-    "phone": venue.phone,
-    "website": venue.website_link,
-    "facebook_link": venue.facebook_link,
-    "seeking_talent": venue.seeking_talent,
-    "seeking_description": venue.seeking_description,
-    "image_link": venue.image_link,
-    "past_shows": [],
-    "upcoming_shows": [],
-    "past_shows_count": 0,
-    "upcoming_shows_count": 0
-  }
+    data = {
+      "id": venue.id,
+      "name": venue.name,
+      "address": venue.address,
+      "city": venue.city,
+      "genres": venue.genres,
+      "phone": venue.phone,
+      "website": venue.website_link,
+      "facebook_link": venue.facebook_link,
+      "seeking_talent": venue.seeking_talent,
+      "seeking_description": venue.seeking_description,
+      "image_link": venue.image_link,
+      "past_shows": [],
+      "upcoming_shows": [],
+      "past_shows_count": 0,
+      "upcoming_shows_count": 0
+    }
 
-  for show in shows:
-    current_show = {}
-    current_show["artist_id"] = show.artist_id
-    current_show["artist_name"] = show.artist.name
-    current_show["artist_image_link"] = show.artist.image_link
-    current_show["start_time"] = show.start_time
+    for show in shows:
+      current_show = {}
+      current_show["artist_id"] = show.artist_id
+      current_show["artist_name"] = show.artist.name
+      current_show["artist_image_link"] = show.artist.image_link
+      current_show["start_time"] = show.start_time
 
-    # Get show start_time and convert it to timestamp and compare it with 
-    # current timestamp to see if it's an upcoming or past show
-    datestring = show.start_time
-    formated = datetime.datetime.strptime(datestring, '%Y-%m-%d %H:%M:%S')
-    timestamp = datetime.datetime.timestamp(formated) 
-    current_timestamp = time.time()
-    
-    if(current_timestamp > timestamp):
-      data["past_shows"].append(current_show)
-      data["past_shows_count"] += 1
-    else:
-      data["upcoming_shows"].append(current_show)
-      data["upcoming_shows_count"] += 1
+      # Get show start_time and convert it to timestamp and compare it with 
+      # current timestamp to see if it's an upcoming or past show
+      datestring = show.start_time
+      formated = datetime.datetime.strptime(datestring, '%Y-%m-%d %H:%M:%S')
+      timestamp = datetime.datetime.timestamp(formated) 
+      current_timestamp = time.time()
+      
+      if(current_timestamp > timestamp):
+        data["past_shows"].append(current_show)
+        data["past_shows_count"] += 1
+      else:
+        data["upcoming_shows"].append(current_show)
+        data["upcoming_shows_count"] += 1
+  except:
+    error = True
+    print(sys.exc_info())
+
+  if error:
+    flash("This venue don't exist")
+    abort(404)
 
   return render_template('pages/show_venue.html', venue=data)
 
@@ -275,49 +284,58 @@ def search_artists():
 
 @app.route('/artists/<int:artist_id>')
 def show_artist(artist_id):
-  # shows the venue page with the given venue_id
-  artist = Artist.query.get(artist_id)
-  shows = Show.query.filter_by(artist_id=artist.id).join(Venue).all()
+  # shows the artist page with the given artist_id
+  error = False
+  try:
+    artist = Artist.query.get(artist_id)
+    shows = Show.query.filter_by(artist_id=artist.id).join(Venue).all()
 
-  data = {
-    "id": artist.id,
-    "name": artist.name,
-    "genres": artist.genres,
-    "city": artist.city,
-    "state": artist.state,
-    "phone": artist.phone,
-    "website": artist.website,
-    "facebook_link": artist.facebook_link,
-    "seeking_venue": artist.seeking_venue,
-    "seeking_description": artist.seeking_description,
-    "image_link": artist.image_link,
-    "past_shows": [],
-    "upcoming_shows": [],
-    "past_shows_count": 0,
-    "upcoming_shows_count": 0
-  }
+    data = {
+      "id": artist.id,
+      "name": artist.name,
+      "genres": artist.genres,
+      "city": artist.city,
+      "state": artist.state,
+      "phone": artist.phone,
+      "website": artist.website,
+      "facebook_link": artist.facebook_link,
+      "seeking_venue": artist.seeking_venue,
+      "seeking_description": artist.seeking_description,
+      "image_link": artist.image_link,
+      "past_shows": [],
+      "upcoming_shows": [],
+      "past_shows_count": 0,
+      "upcoming_shows_count": 0
+    }
 
-  for show in shows:
-    current_show = {}
-    current_show["venue_id"] = show.venue_id
-    current_show["venue_name"] = show.venue.name
-    current_show["venue_image_link"] = show.venue.image_link
-    current_show["start_time"] = show.start_time
+    for show in shows:
+      current_show = {}
+      current_show["venue_id"] = show.venue_id
+      current_show["venue_name"] = show.venue.name
+      current_show["venue_image_link"] = show.venue.image_link
+      current_show["start_time"] = show.start_time
 
-    # Get show start_time and convert it to timestamp and compare it with 
-    # current timestamp to see if it's an upcoming or past show
-    datestring = show.start_time
-    formated = datetime.datetime.strptime(datestring, '%Y-%m-%d %H:%M:%S')
-    timestamp = datetime.datetime.timestamp(formated) 
-    current_timestamp = time.time()
-    
-    if(current_timestamp > timestamp):
-      data["past_shows"].append(current_show)
-      data["past_shows_count"] += 1
-    else:
-      data["upcoming_shows"].append(current_show)
-      data["upcoming_shows_count"] += 1
+      # Get show start_time and convert it to timestamp and compare it with 
+      # current timestamp to see if it's an upcoming or past show
+      datestring = show.start_time
+      formated = datetime.datetime.strptime(datestring, '%Y-%m-%d %H:%M:%S')
+      timestamp = datetime.datetime.timestamp(formated) 
+      current_timestamp = time.time()
+      
+      if(current_timestamp > timestamp):
+        data["past_shows"].append(current_show)
+        data["past_shows_count"] += 1
+      else:
+        data["upcoming_shows"].append(current_show)
+        data["upcoming_shows_count"] += 1
   
+  except:
+    error = True
+    print(sys.exc_info())
+
+  if error:
+    flash("This artist don't exist")
+    abort(404)
   return render_template('pages/show_artist.html', artist=data)
 
 #  Update
